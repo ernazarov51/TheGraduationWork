@@ -6,13 +6,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-drf_template}
+      POSTGRES_DB: ${POSTGRES_DB:-edustream}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-drf_template}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-edustream}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -34,7 +34,7 @@ services:
     build: .
     restart: unless-stopped
     volumes:
-      - .:/app               # live-reload for development
+      - .:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/media
     ports:
@@ -46,30 +46,22 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    # Development: runserver
-    # Production: override with gunicorn (see comment below)
     command: python manage.py runserver 0.0.0.0:8000
 
-  # ── Production variant ────────────────────────────────────────────────────
-  # Uncomment the block below and comment out `app` above for production.
-  # Requires: pip install gunicorn  (add to requirements.txt)
-  #
-  # app:
-  #   build: .
-  #   restart: always
-  #   volumes:
-  #     - static_volume:/app/staticfiles
-  #     - media_volume:/app/media
-  #   ports:
-  #     - "8000:8000"
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #   command: gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120
+  celery:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - .:/app
+      - media_volume:/app/media
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A core worker --loglevel=info --concurrency=2
 
 volumes:
   postgres_data:

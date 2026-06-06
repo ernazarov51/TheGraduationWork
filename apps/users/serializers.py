@@ -11,7 +11,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("phone", "full_name", "password", "password_confirm")
+        fields = ("phone", "full_name", "role", "password", "password_confirm")
 
     def validate(self, attrs):
         if attrs["password"] != attrs.pop("password_confirm"):
@@ -25,7 +25,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "phone", "full_name", "is_active", "created_at")
+        fields = ("id", "phone", "full_name", "role", "is_active", "created_at")
         read_only_fields = ("id", "is_active", "created_at")
 
 
@@ -37,4 +37,5 @@ class PhoneTokenObtainPairSerializer(TokenObtainPairSerializer):
         token = super().get_token(user)
         token["phone"] = user.phone
         token["full_name"] = user.full_name
+        token["role"] = user.role
         return token

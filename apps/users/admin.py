@@ -6,8 +6,8 @@ from apps.users.models import User
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ("phone", "full_name", "is_active", "is_staff", "created_at")
-    list_filter = ("is_active", "is_staff")
+    list_display = ("phone", "full_name", "role", "is_active", "is_staff", "created_at")
+    list_filter = ("role", "is_active", "is_staff")
     search_fields = ("phone", "full_name")
     ordering = ("-created_at",)
     readonly_fields = ("created_at", "updated_at")

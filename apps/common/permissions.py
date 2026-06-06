@@ -32,3 +32,47 @@ class IsAdminOrReadOnly(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return bool(request.user and request.user.is_staff)
+
+
+class IsTeacher(BasePermission):
+    message = "Only teachers can perform this action."
+
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.role == "teacher"
+        )
+
+
+class IsStudent(BasePermission):
+    message = "Only students can perform this action."
+
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.role == "student"
+        )
+
+
+class IsDirector(BasePermission):
+    message = "Only directors can perform this action."
+
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.role == "director"
+        )
+
+
+class IsTeacherOrDirector(BasePermission):
+    message = "Only teachers or directors can perform this action."
+
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.role in ("teacher", "director")
+        )
