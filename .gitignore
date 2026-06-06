@@ -1,0 +1,40 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Django
+db.sqlite3
+*.sqlite3
+staticfiles/
+media/
+
+# Logs — keep folder via .gitkeep, ignore log content
+logs/*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Coverage / testing
+.coverage
+htmlcov/
+.pytest_cache/

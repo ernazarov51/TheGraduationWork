@@ -1,0 +1,78 @@
+services:
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-drf_template}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-drf_template}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  app:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - .:/app               # live-reload for development
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # Development: runserver
+    # Production: override with gunicorn (see comment below)
+    command: python manage.py runserver 0.0.0.0:8000
+
+  # ── Production variant ────────────────────────────────────────────────────
+  # Uncomment the block below and comment out `app` above for production.
+  # Requires: pip install gunicorn  (add to requirements.txt)
+  #
+  # app:
+  #   build: .
+  #   restart: always
+  #   volumes:
+  #     - static_volume:/app/staticfiles
+  #     - media_volume:/app/media
+  #   ports:
+  #     - "8000:8000"
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   command: gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120
+
+volumes:
+  postgres_data:
+  redis_data:
+  static_volume:
+  media_volume:
